@@ -8,6 +8,16 @@ light_cal = 0
 light_cal_fall_min = 1
 light_cal_threshold = 1000
 
+class bcolors:
+    HEADER = '\033[95m'
+    OKBLUE = '\033[94m'
+    OKGREEN = '\033[92m'
+    WARNING = '\033[93m'
+    FAIL = '\033[91m'
+    ENDC = '\033[0m'
+    BOLD = '\033[1m'
+    UNDERLINE = '\033[4m'
+
 loop_on = True
 
 ### ------ Setting up the motors and sensors -------
@@ -16,10 +26,11 @@ print("Connecting the IO ports...")
 main_motor = MediumMotor("outA")
 gyro_sensor = GyroSensor()
 gyro_sensor.mode = 'GYRO-ANG'
-ramp_level = TouchSensor("in4")
-obj_start_sensor = Sensor("in1")
-obj_fall_sensor = ColorSensor("in3")
-obj_fall_sensor.mode = 'COL-REFLECT'
+ramp_level = TouchSensor("in1")
+obj_start_sensor = Sensor("in2")
+obj_fall_sensor = TouchSensor("in3")
+# obj_fall_sensor = ColorSensor("in3")
+# obj_fall_sensor.mode = 'COL-REFLECT'
 ### ------------------------------------------------
 
 def setup():
@@ -113,7 +124,8 @@ def experiment():
             print("Start Time: ", startTime)
             print("Ramp Level Sensor Value: ", ramp_level.value())
             print("OBJ Start Sensor Value: ", obj_start_sensor.value())
-            print("OBJ Fall Sensor Value: ", obj_fall_sensor.reflected_light_intensity)
+            # print("OBJ Fall Sensor Value: ", obj_fall_sensor.reflected_light_intensity)
+            print("OBJ Fall Sensor Value: ", obj_fall_sensor.value())
             print("GYRO Sensor Value RAW: ", gyro_value)
             print("GYRO Sensor Value: ", currValue)
             print("Angle: ", angle)
@@ -124,13 +136,15 @@ def experiment():
             working = False
 
         # ----------- End Sensor Handling ---------------
-        if obj_fall_sensor.reflected_light_intensity > light_cal_fall_min:
+        # if obj_fall_sensor.reflected_light_intensity > light_cal_fall_min:
+        if obj_fall_sensor.value():
             main_motor.stop()
+            os.system("clear");
             print(" ----- DONE ----- ")
-            print("Time Counter since the experiment started:", timeCounter)
-            print("Start Time:", startTime)
-            print("Time took to fall down:", timeCounter - startTime)
-            print("Angle at which it fell down", angle)
+            print("Time Counter since the experiment started:", timeCounter, "s")
+            print("Start Time:", startTime, "s")
+            print("Time took to fall down:", timeCounter - startTime, "s")
+            print("Angle at which it fell down", angle, "deg")
             
             # ------------ Calculations ---------------
             t = timeCounter - startTime
@@ -140,8 +154,8 @@ def experiment():
             ms = math.tan(math.radians(angle))
             m = ms - (a / (g * math.cos(math.radians(angle))))
             
-            print("The static coefficient of friction is:", ms)
-            print("The kinetic coefficient of friction is:", m)
+            print("The static coefficient of friction is:", bcolors.OKGREEN, ms, bcolors.ENDC)
+            print("The kinetic coefficient of friction is:", bcolors.OKGREEN, m, bcolors.ENDC)
             # -----------------------------------------
             
             time.sleep(10)
